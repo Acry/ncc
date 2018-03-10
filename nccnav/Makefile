@@ -1,19 +1,23 @@
+#C-Compiler
+CC 		= gcc
 
-CC = g++
-LCFLAGS = -Wall -g
-CFLAGS = $(LCFLAGS) -c -g
+CFLAGS 		=
+CPPFLAGS 	=
+
+CXX 		= g++
+CXXFLAGS 	= -ansi
 
 OBJDIR = ../objdir
 
-$(OBJDIR)/nccnav: nccnav.C $(OBJDIR)/dbstree.o $(OBJDIR)/inttree.o
-	$(CC) -g nccnav.C -I.. -lncurses -o nccnav $(OBJDIR)/dbstree.o $(OBJDIR)/inttree.o
+$(OBJDIR)/nccnav: nccnav.cpp $(OBJDIR)/dbstree.o $(OBJDIR)/inttree.o
+	$(CXX) $(CXXFLAGS) nccnav.cpp -I.. -lncurses -o nccnav $(OBJDIR)/dbstree.o $(OBJDIR)/inttree.o
 
 $(OBJDIR)/dbstree.o: ../dbstree.[Ch]
-	$(CC) $(CFLAGS) ../dbstree.C -c
+	$(CXX) $(CXXFLAGS) ../dbstree.cpp -c
 	@mv dbstree.o $(OBJDIR)
 
 $(OBJDIR)/inttree.o: ../inttree.[Ch]
-	$(CC) $(CFLAGS) ../inttree.C -c
+	$(CXX) $(CXXFLAGS) ../inttree.cpp -c
 	@mv inttree.o $(OBJDIR)
 
 clean:

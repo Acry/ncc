@@ -1,0 +1,20 @@
+You may get this error in a modern GNU system.
+Check out the preprocessed source (-ncspp option), and search
+for `int8_t'.  If you see a line like
+
+	typedef int int8_t __attribute__ ((__mode__ (QI)));
+
+You've got it. This is serious braindamage from glibc (again).
+Please edit the file /usr/include/sys/types.h.  It sais:
+
+	#if !__GNU_PREREQ (2,7)
+	... good typedefs
+	#else
+	... braindamaged typedefs
+	#endif
+
+Change the if to
+
+	#if !__GNU_PREREQ (2,7) || defined __NCC__
+
+That's perfectly safe.

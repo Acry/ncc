@@ -1,0 +1,91 @@
+
+It is very very useful to know "which functions modify a variable".
+[variable: noun. member of structure or global variable]
+
+when in the ncc analysis is detected that a variable is definitelly
+modified, that is reported accordingly. There are of course cases
+where a variable is indirectly modified and it can't be detected.
+Such a case which escapes ncc analysis is for example:
+
+	*(&x) = 3;
+
+ncc only reports the cases where a variable is in the lvalue
+of an assignment (=, +=, -=, etc) or the ++, -- operators
+are applied on it.
+
+That is Good Enough.
+
+
+A Sample Program (analyse this):
+
+	//-------------start------------
+	int GLOBAL;
+	typedef struct { int x; } S;
+
+	int foo ()
+	{
+		S s;
+		s.x++;
+		GLOBAL++;
+	}
+
+	int bar ()
+	{
+		int x;
+		S s;
+
+		x = GLOBAL;
+		x = s.x;
+	}
+
+	int zoo ()
+	{
+		S s;
+
+		!GLOBAL;
+		GLOBAL = 12;
+		s.x = GLOBAL;
+		GLOBAL = s.x;
+	}
+	//--------------end--------------
+
+If this program is compiled with ncc, the output is:
+
+
+	D: foo()
+	S: S.x
+	G: GLOBAL
+
+	D: bar()
+	g: GLOBAL
+	s: S.x
+
+	D: zoo()
+	g: GLOBAL
+	G: GLOBAL
+	S: S.x
+	s: S.x
+
+	P: rr.c
+	L: foo() 6 11
+	L: bar() 13 20
+	L: zoo() 22 30
+
+Capital 'S' and 'G' denote that the variable is not modified.
+The interesting thing is to view this with 'nccnav'.
+
+1. Run nccnav on the above output data.
+
+2. Press <enter> on the file.
+
+3. Press <enter> on function "bar()".
+
+4. Press <enter> on "GLOBAL".
+
+Here is the interesting stuff. The resource of study at
+this point is the variable GLOBAL. Functions "bar()" and "zoo()"
+are painted blue and are above it. Functions "zoo()" and "foo()"
+are painted sandy brown and are below it. Happy Hacking!
+
+------------------
+

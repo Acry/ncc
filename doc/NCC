@@ -1,0 +1,330 @@
+ncc 2.7
+			     -      see doc/CHANGES for the new stuff
+
+
+WHATIS
+======
+
+
+Basically, ncc is a tool for hackers designed to provide program analysis
+data of C source code.  That is program flow and usage of variables.
+Some big programs out there are by default obfuscated, either due to extreme
+size, programming style, hacks upon hacks and other crazyness.  In order to
+do program analysis correctly, there has to be compilation of expressions,
+and thus ncc is really a compiler (supporting zero architectures).
+
+At the same time, ncc is small and easy to understand so you can hack it and
+add custom features and extensions at any stage of the compilation, to match
+what you expect and consider useful as output.  Most common GNU extensions
+are supported and there has been an effort be practically useful in the GNU
+system (which is not easy because the GNU system is very gcc-friendly).
+The goal is to be able to replace 'ncc' in Makefiles and work with the big
+open source projects.
+
+In the latest versions of ncc, some advanced analysis features have been
+implemented and they are about pointer-to-function variables and the values
+assigned to them.  The sample files doc/fptrs.c and doc/farg.c can be
+analysed with ncc to demonstrate what can be done there.
+
+In version 2.0 ncc can emulate the linker behavior to join ncc output files
+and can also act as a wrapper for some binutils programs that are used
+for linking.
+
+
+INSTALL
+=======
+
+Either 'make install' as root, or:
+
+1. 'make' and the file ncc should appear in objdir/
+
+2. Copy the file doc/nognu to /usr/include.
+
+This file is used to fix some madness of libc header files and remove some
+GNU extensions which violate the C grammar and can be removed without
+problems.  If you don't want to copy it to /usr/include, edit config.h and
+recompile.
+
+3. With make the file 'nccnav' should also appear in nccnav.
+   Copy this file to /usr/bin and make a symbolic link nccnavi -> nccnav if
+   you want auto-indent
+
+
+
+			Invoking ncc
+			------------
+
+USAGE
+=====
+
+The simple way to use ncc on a C program hello.c, is with the
+command : ncc hello.c
+
+The default output (at stdout) is that for every function defined in hello.c
+the following things are reported :
+
+	- function calls
+	- pointer to function assigned values
+	- use of global variables
+	- use of members of structures
+
+The latter has been proved very useful in understanding what
+a function actually does.
+
+The options of ncc start with "-nc".
+
+with "-ncmv" each use of global variable, function or member of structure is
+ reported multiple times as used.  This is a way to understand better how the
+ code works, by looking the use of variables between function calls.
+ -nccnav can't display that-
+
+with "-nchelp" help is displayed on the -nc options.
+
+with "-ncoo" the output goes to a file sourcefile.c.nccout
+
+with "-ncld" the output goes to a file sourcefile.o.nccout
+ or to the file specified with the command line option "-c"
+ and the extension nccout.  Moreover in this mode ncc does
+ linker emulation.  Described below.
+
+with "-ncspp" the preprocessed file is kept in sourcefile.i
+
+with "-ncfabs" absolute pathnames are reported.
+
+with "-ncnoerror" if there are syntax errors in expressions ncc
+ will link the function with a special "NCC:syntax_error()" function
+ instead of terminating the compilation.
+
+
+STUDYING THE OUTPUT  &  PROGRAM ANALYSIS
+========================================
+
+ncc is a very useful tool in exploring programs but equally useful is the
+included program `nccnav'.  The output of ncc is such that can be easilly
+loaded by some other graphical viewer.  nccnav can do this and has some nice
+features like the recursion detector.
+
+So once you learn HOW to run ncc on programs, make sure to read
+nccnav/README.
+
+The output can also be viewed using the graphviz program.  See the section
+GRAPHVIZ below.
+
+
+GCC-PREPROCESSING
+=================
+
+ncc uses gcc for preprocessing because the standard library headers
+eventually need some other architecture specific header which are somewhere
+where gcc knows where.  Any options starting with -D and -I will be passed
+to gcc for preprocessing.  Generally, because ncc should be able to work
+from makefiles instead of gcc, all options unless starting with '-nc'
+produce no error (and may be even passed to gcc in a special mode).
+
+The files compiled with ncc, will have the __GCC__ macro defined, because many
+programs are written for gcc and take some gcc extensions for granted.
+ncc additionally defines __NCC__ macro.
+
+
+
+(example) HACKING mpg123
+========================
+
+This one is easy (because it's done "the right way", programs are
+exponential: the number of tasks a program can do is N^2 if N are the lines
+of code. Thus any program of more than 50000 lines has probably design flaws
+(unless it's device drivers))
+
+Anyway, to view the calls of mpg123, the command is:
+
+	for a in *.c; do ncc $a -ncoo; done
+	cat *.nccout > Code.map
+	nccnav
+
+or alternativelly:
+
+	ncc *.c > Code.map
+
+
+HACKING BIGGER PROGRAMS
+=======================
+
+The obvious way is to use make with ncc, so that the required -D and -I
+options are invoked, and only the right files are compiled (if there
+are depenencies).  Normally, changing "CC=gcc" to "CC=ncc -ncoo" would be
+enough.  But alas! some times it isn't.
+
+Sometimes the make procedure expects object files which ncc does not produce
+and it may fail.  This can be prevented with 'make -i' where make ignores
+errors.
+
+Some other programs compile and run helpers during make.  If all else
+fails, the last resort that always works, is using the "-ncgcc" option.
+
+with "-ncgcc", ncc will also run gcc in parallel with all it's options except
+the -nc ones.  So nobody will understand that ncc was even run and the
+makefiles will be happy.  It takes 1000% more time, but computers do get
+faster every day.  In this case, it is generally a good idea to remove any
+'-O2 -g' options.
+
+Make sure you read doc/TROUBLES if you're going to use ncc in big GNU
+projects (and not only).
+
+hacking.LINUX-KERNEL, hacking.GCC, hacking.GLIBC, and other files in doc/
+have specific instructions on using ncc on some *really big* programs which
+may need a couple of tricks to get it done.
+
+
+LINKER EMULATION
+================
+
+The best job is done by using ncc in the makefile in parallel with the
+normal compilation.  For serious work, use
+
+   CC=ncc -ncgcc -ncld -ncspp -ncfabs
+
+The option "-ncld" instructs ncc to attempt to link ncc output files
+as gcc would create object files.  For example, the command
+
+   ncc -ncld -ncgcc -c file1.c
+
+will generate the files "file1.o" and "file1.o.nccout"
+The command
+
+    ncc -ncld -ncgcc file2.c file1.o -o myprog
+
+will generate the files "myprog" and "myprog.nccout", where the second
+file will be the analysis of file2.c plus the file file1.o.nccout.
+
+Moreover, ncc can be called as "nccar", "nccld", "nccg++" and "nccc++".
+In this case, the corresponding program will be called normally
+with all the options passed and then ncc will attempt to locate
+object files with the extension 'nccout' and link them in a bigger
+nccout file.  So it's even better to say
+
+    AR = nccar
+    LD = nccld
+    CXX = nccg++
+
+The advantage of this method is that we don't have to collect the
+nccout files afterwards.  Usually all the right files will have been
+concatenated into one big nccout file at the end of compilation.
+
+This method works best when gcc is used to link the object files, and
+also works pretty well with ar and ld.  However, there are projects
+out there that use crazy Makefiles and libtool, that need special
+hacks to achieve this.
+
+			Output Details
+			--------------
+
+POINTERS TO FUNCTIONS
+=====================
+
+ncc does not only report which pointer to function variables are called, but
+also which values are assigned to them. Pointers to functions are reported
+as pseudo-functions which call *all* the values assigned to them.
+
+So the caller -> callee relation is different. While the code of a normal
+function calls all its callees, a pointer to function will call any one of
+its callees.
+
+
+RELEVANT NOTES
+==============
+
+- Anonymous typedef'd structures are automatically named after the typedef.
+For example:
+	typedef struct {
+		int x, y;
+	} Point;
+	int main ()
+	{
+		Point P;
+		P.x = 3;
+	}
+ ncc will report that 'main' uses member 'x' of structure 'Point', although
+the structure is really anonymous. Conflicts *should* be extremely rare.
+  
+
+TROUBLESHOOTING
+===============
+
+Thanks to open source, there are infinitive test cases.
+ncc has been tested with:
+
+	linux kernel 2.2 (partial according to depend),
+	Imagemagick, gcc, Doom (you gotta see this source!),
+	xanim, mpg123, bladeenc, bzip2, gtk, gnu-fileutils,
+	less, mpeg_play, nasm, ncftp, vim, sox, bind, gdb, flames,
+	xrick (Rick Dangerous!), inform (Text adventure language),
+	linux kernel 2.4.20, zsh, zile, emacs, gnuchess, bash,
+	python, elinks, linux kernel 2.6.9, pygame, jamvm, perl5,
+	linux 2.17, gcc 4.2, x.org 7.1, git, qemu, ffmpeg, libjpeg,
+	openssh
+
+although these programs are correct and ncc lacks testing on finding errors
+on programs with syntax errors.
+
+In the case ncc complains about syntax errors or segfaults, check out
+the file TROUBLES for the way to hunt down the bug.  Sometimes just
+adding something to nognu macros is enough to continue the compilations.
+
+
+			Viewers
+			-------
+
+CODEVIZ
+=======
+
+CodeViz is a collection of C/C++ analysis tools by Mel Gorman.
+See http://freshmeat.net/projects/codeviz
+
+The CodeViz perl scripts recognize the .nccout format of ncc.
+If you have concatenated all the .nccout files of a projects to say
+'everything.nccout'
+
+You can do:
+	genfull -g cncc -f everything.nccout
+to generate the full.graph file. Then:
+	gengraph -f some_function -d depth
+to generate a nice postscript graph of the call tree.
+
+
+GRAPHVIZ
+========
+
+Jose Vasconcellos has sent a python script which converts ncc output
+to dot data.  The dot command is part of the Graphviz package and it's
+used by codeviz to generate the graph.  More about graphviz at:
+
+   http://www.graphviz.org
+
+The script scripts/gengraph.py can be called like this:
+
+   gengraph.py code.map main | dot -Tsvg -o graph.svg
+
+to generate a nice SVG graph of the callgraph.
+The zgrviewer at http://zvtm.sourceforge.net/zgrviewer.html
+is great for viewing large graphs.  Still, it's a good idea
+to specify depth because some graphs are **really** big:)
+
+
+
+THEREST
+=======
+
+Program written & Copyright (C) Stelios Xanthakis 2002, 2003, 2004, 2005, 2006, 2007
+Distributed under the terms of the Artistic License.
+e-mail: sxanth@ceid.upatras.gr
+ncc latest download: http://students.ceid.upatras.gr/~sxanth/ncc/
+
+Many contributions and feedback from Scott McKellar <jm407a@sbc.com>
+ who now is the other person who knows `how ncc works'.
+Additional hacks for kernel 2.6  by Ben Lau <benlau@linux.org.hk>
+gengraph.py is Copyright (C) 2004 Jose Vasconcellos and GPL.
+
+Also thanks to:
+	Sylvain Beucler, Anuradha Weeraman, Florian Larysch,
+	Deepak Ravi, Thomas Petazzoni, Adam Shostack,
+	Hakon Lovdal, Awesome Walrus

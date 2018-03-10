@@ -1,0 +1,41 @@
+Hacking gcc (almost died from recursion)
+----------------------------------------
+
+Analysing gcc works properly by replacing the variables
+
+	CC = gcc
+	AR = ar
+to
+	CC = ncc -ncgcc -ncld -ncfabs
+	AR = nccar
+
+In the Makefile in the objdir, near the comment
+
+	---------------------------------------------
+	Programs producing files for the HOST machine
+	---------------------------------------------
+
+HOWEVER, this does not work right away. 
+What I did was.
+
+- first compile gcc with "make bootstrap" with the
+  original CC and AR values (without ncc)
+
+- then edit the Makefile and add ncc/nccar
+
+- then go to the gcc source inside the gcc/ directory
+  and do "touch *.h"
+
+- then go to the objdir and redo "make"
+
+That seemed to work but it takes ages. The problem was
+libiberty. If anyone improves that, send mail.
+
+nccnav prev-gcc/cc1.nccout
+
+	366	Filez
+	13132	functions
+	3442	global variables
+	773	structs
+	4424	members
+	422857	Total links

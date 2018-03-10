@@ -1,0 +1,15 @@
+For qemu 0.9
+------------
+
+run configure with the option
+
+	./configure --cc='ncc -ncgcc -ncld -ncfabs'  [other options]
+	make
+	nccnav i386-softmmu/qemu.nccout
+
+164	Files
+3260 	Functions
+879	Global variables
+335	Structs
+2445	Members
+42040	Total links

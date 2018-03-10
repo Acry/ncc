@@ -1,0 +1,510 @@
+New in 2.8
+==========
+
+- ncc now will automatically strip nccout files (this will work if
+  Python is installed).  Except from less space, in the previous
+  versions under certain circumstances the nccout files could grow
+  exponentially.
+
+- fixed a segfault in link mode without any .c or .o files provided
+  (just an .s file for example)
+
+- The temporary filename that is used to view functions with "vi"
+  (or your favorite highlighting editor), is now different depending
+  on the current function.  So, 'vi' can store the current position
+  of the cursor for every function and that is more functional.
+
+- Robustified parsing of aggregate array initializers that caused
+  many problems with linux 2.6.27. Some assignments to pointers to
+  functions may be missed though.  (help from Luiz Fernando Capitulino)
+
+- work around __builtin_types_compatible_p() that has a syntax with
+  type arguments confusing the parser.  Same for __builtin_offsetof()
+
+- ncc now understands __inline__, __inline and __FUNCTION__ so no need
+  to fix them in nognu.
+
+New in 2.7
+==========
+
+- In the case where in a Makefile we had a target like:
+	gcc foo.c bar.c zoo.c -o program
+  using ncc instead of gcc would fail. Now this case is
+  handled correctly.  If -ncgcc is specified gcc will be
+  executed as above.  ncc instead will analyse each file
+  and then link the generated .nccout files to program.nccout.
+  (qemu)
+
+- Fixed leaving ncurses mode -> xterm -> re-enter ncurses in
+  nccnav.  Patch by Sylvain Beucler.
+
+- New command line option -nccpp=<preprocessor>, useful for
+  using ncc in cross compilation, from Jose Vasconcellos
+  
+New in 2.6
+==========
+
+- '-m*' flags are passed to the preprocessor.  For example if
+  '-mmmx' is not used in preprocessing, the macro __MMX__ is not
+  declared and importing <mmintrin.h> will fail.  (X11R71)
+
+- If nccnav is executed from the root of the source tree, it will
+  show relative file paths (good).
+
+- Updated instructions for kernel hacking.  Some object files were
+  missed.
+
+- Fixed segfault with __gu_val.
+
+- Speed up linking nccout object files.
+
+- nccnav crashed if it couldn't open the temporary file.
+
+New in 2.5
+==========
+
+- The nccnav viewer can show functions and files with "vi", thus
+  with syntax coloring.  This will happen if you press 'v' on a
+  function.
+
+- The nccnav viewer can start from the list of global variables
+  (by pressing 'g' in the initial screen).
+
+- nccar will understand the "r" option and replace members in
+  the archive instead of just appending the data.  That's the
+  right thing because with the old version, linking archives
+  into bigger archives would result in geometric explosion of
+  the size of the files.
+
+- Better type propagation in conditional expressions.
+	(x ? (void*)0 : (struct A*)a)->x;
+  now works (gcc/LIM_DATA)
+
+- support for anonymous structures and unions (GNUC):
+	struct X {
+		union {
+			int a, b, c;
+		}
+	};
+	void f (struct X *x)
+	{
+		x->a = 1;
+	}
+  (linux 2.17)
+
+- Fixes to hack linux 2.17:
+  - The "__typeof__ (function)" can be used to declare another function 
+  - forward enum declarations
+  - char X[] = ("hello");	// was error
+
+- The expression in a Variable Length Array is not constant (and in fact
+  it can call functions).
+	int X [y = foo()];	// was error
+
+- Debian package and Doc fixes by Anuradha Weeraman.
+
+New in 2.4
+==========
+
+- Bugfix (segfault with gcc 4.x) from Florian Larysch.
+
+- More configury for 'alloca()' in dbstree.
+
+- new command line option '-ncnoerr'. When there are errors in
+  expressions, ncc will not terminate the compilations. Instead
+  it will link all functions that had errors with the special
+  pseudo-function "NCC:syntax_error()".
+
+New in 2.3
+==========
+
+- Bugfix (segfault with gcc 4.0) from Deepak Ravi.
+
+- a typedef name used as a label would cause a syntax error (JamVM)
+
+- Applying '*' on a function has no effect.  (pygame)
+	void (*F)();
+	(**F)();	// used to be error
+
+- Support for '_Complex' as a declaration specifier.
+  
+New in 2.2
+==========
+
+- Included a LICENSE text in doc so ncc can be part of Debian.
+
+- Bugfix/crash in nccnav.  Pressing the up-arrow in functions
+  mode caused a segmentation violation because isalpha(KEY_UP)
+  is true.
+
+- if the last statement of a compound statement in expression
+  was an __asm__ and that was the first expression of the program
+  we had a segfault. Thanks to Thomas Petazzoni.
+
+- Header file fixes for MacOS. (Adam Shostack)
+
+- __inline__ is accepted as 'inline'.  gcc-3.4.4 broke things
+  again.
+
+- more pointer-to-function cases caught:
+	fptr = flag ? p->tp_call : 0;
+  now detects that calling fptr() may call p->tp_call()
+  (python)
+
+New in 2.1
+==========
+
+- ncc reports access of arrays. For example, in the code
+	int *X;
+	int foo ()
+	{	X [12] = 1;	}
+  it will be reported that foo modifies 'X[]' and uses 'X'.
+
+- fix for cygwin. In cygwin read() converts \r\n to \n and for that
+  the bytes read are fewer than the size of the file as reported by
+  stat() and ncc thought there was an error. Thanks to Hakon Lovdal.
+
+- comlicated segfault in cygwin due to a small bug. (eu).
+
+- even better support for reporting use of members of structures.
+  For example, in:
+	struct X { int i, j };
+	int foo () {
+		struct X x = { 1, };
+	}
+	int bar () {
+		struct X x = { .y = 1 };
+	}
+	int zoo () {
+		(struct X) { .x = 1, .y = 2 };
+	}
+  it will be reported that foo modifies member 'x' and that bar
+  modifies member 'y' and that zoo modifies both.
+
+
+New in 2.0
+==========
+
+- linker emulation mode with the command line switch "-ncld".
+  In this mode ncc generates "nccout object files" as gcc generates
+  object files and then attempts to link them into bigger nccout
+  files just as gcc links object files.
+
+- binutils wrapper mode.  ncc can be called as 'nccar', 'nccld',
+  'nccg++' and 'nccc++'.  It will normally call the corresponding
+   program and then attempt to collect and link "nccout object files".
+
+- gengraph.py: a script that can produce dot data from ncc output.
+  Sent by Jose Vasconcellos
+
+- Many small fixes for linux-kernel 2.6.9.  ncc is now more relaxed
+  about some cases in which it reported errors.  We can assume that
+  ncc is used to analyse correct programs and worry not about semantic
+  checks.
+  The file hacking.LINUX-KERNEL has been updated with instructions
+  to make ncc working again.
+
+- Assigning non functions to pointers to functions would cause an error:
+	int (*F)();
+	int x;
+	F = x;			// error
+	F = (int(*)())x;	// error too
+  (readline)
+
+- Casts would prevent reporting pointer to function variables passed
+  as arguments to other functions. For example:
+	int (*FN)();
+	foo (FN);		// reported ok
+	foo ((int(*)())FN);	// missed
+  (elinks)
+
+- Local pointer to function variables are named after their function.
+  For example, in:
+	int foo() { int (*fn)()=f1; fn(); }
+	int bar() { int (*fn)()=f2; fn(); }
+  the 'fn' variables are reported as 'foo/fn()' and 'bar/fn()'. In the
+  previous version they were both reported as '*fn()' and one couldn't
+  tell that in reallity foo() calls f1() and bar() calls f2().
+
+New in 1.9
+==========
+
+- the statement following switch() need not be compound (lwc).
+
+- nccnav will also display any comments preceeding functions when asked to
+  display the text of a function (struct too). They are supposed to be
+  essential in understanding what happens...
+
+- /usr/include/nognu macros handle the C99 keyword '_Bool'.
+  /use/include/nognu macros handle '__asm' to be treated syntactically like
+   '__asm__'. Same for __volatile as found in <mathinlines.h>. The crapness never ends.
+  ---Don't forget to Copy the new doc/nognu over the old one---
+
+- Bugfix:
+	typedef int x;
+	int f ()
+	{
+		int x;
+		x = 1;
+	}
+  didn't work as the line starting with 'x' was considered a declaration.
+  In other words, the Bugfix from version 1.7 broke more things than it
+  fixed! (discovered in python source).
+
+- Bugfix:
+	typedef int (*func)();
+	int f () {}
+	int main ()
+	{
+		func x, y;
+		x = f;		// reported ok!
+		y = (func) f;	// not reported. BUG
+	}
+  A cast would prevent ncc from reporting pointer to function assignments
+  as pseudo calls. (python source)
+
+New in 1.8
+==========
+
+- It is very useful to report whether a function *just reads*
+  or *modifies* a variable. ncc now reports such information
+  when it is certain that a variable *is* modified by a function.
+  Read 'README.1.8.rw' for info.
+
+- ncc can now handle the case:
+	(x ? F1 : F2) (args)
+  it used to report that just a "virtual call" is there.
+  Now such constructs are converted to:
+        x ? F1 (args) : F2 (args)
+  reported data is much better for hacking and less confusing
+
+
+New in 1.7
+==========
+
+- From Ben Lau <benlau@linux.org.hk> :
+
+   - A fix for gcc syntax where __asm__() can be specified in
+     a declaration before initialization. Fix for M68K kernel from uClinux
+
+   - Made ncc work with 2.6 kernel! There was a problem with declaration
+     initializers and was triggered in fs/afs/super.c  (thanks!)
+
+   - More stuff with gcc-3.2 and preprocessing. Now we pass -O* options
+     to the preprocessor because it enables the definition of the
+     __OPTIMIZE__ macro, without which kernel can't be compiled.
+
+- nccnav can regenerate its input file without including dupes
+  (functions of header files reported multiple times).
+
+- More features with pointer to functions passed as arguments to
+  other functions.
+
+- Bugfix:
+	typedef int x;
+	struct foo {
+		x x;
+		x y;	// error!
+	};
+  Now fixed (linux kernel, fs/ntfs/inode.h)
+
+- In the case ncc is compiled with gcc, we define 'alloca' to be
+  '__builtin_alloca' and avoid lots of portability issues on non GNU
+  systems.
+
+New in 1.6
+==========
+
+- While "structure->member ()" was detected, "(*structure->member) ()"
+  was not. Now it is. (tkDvi)
+
+- A SIGPIPE would terminate nccnav if requested to view a very big
+  file which didn't fit in the buffer of "less" and the user pressed 'q'.
+
+- New way to view the call graph with pop-ups in nccnav. History mode
+  revised with '<' and '>'.
+
+- Analysis of function addresses passed as arguments to other functions.
+  For example, ncc can now report that qsort() calls whichever comp() function
+  is passed to it. See the file doc/farg.c for more.
+
+New in 1.5
+==========
+
+- The locations of structure declarations are emitted in the
+  output of ncc and nccnav can extract and display them
+  (extremely useful).
+
+- ncc now works on systems that don't have mmap.
+
+- Adapted to work with the kernel sources without having to
+  edit the weirdness found in ide-cd.h (__u8 short) and
+  parport_pc.c (multiple defininitions of function)
+
+- nccnav will indent the source if called with a name
+  other than "nccnav", like "nccnavi".
+
+- Created man page so ncc can be included in distributions.
+
+New in 1.4
+==========
+
+- nccnav now provides "The Recursion Detector".
+
+- ncc does no longer complain if something is declared as
+  just void. It seems this is perfectly valid (valgrind source)
+
+New in 1.3
+==========
+
+- This release includes some changes in the viewer nccnav:
+  It's possible to view the text of functions and entire files
+  with an external viewer.
+  This by default is "indent -kr -st | less".
+
+- Internal changes where the dbstrees were changed to templates
+  instead of polymorphic classes.
+
+New in 1.2
+==========
+
+- Bugfix. Negative floating point values in initializers would
+  cause a segmentation violation.
+
+- The preprocessed source may also include #pragma directives.
+  This should've caused some problems, sometimes.
+
+- In GNUC extensions, goto may be followed by an expression (tcctest).
+
+- `__alignof__' is now simply replaced by `sizeof'. 
+
+- `__typeof__(type)' now supported
+
+- nccnav fixes: very long lines would appear on the next line (because
+  ncurses counts tab as one character). Also the request to display the
+  text of the last function of a file which does not end in a newline
+  would cause a segmentation violation.
+
+New in 1.1
+==========
+
+- Major Feature: ncc now does full analysis on the pointers to functions
+  and the values assignmed to them; The result is incredibly amazing when
+  working with projects like the linux kernel where there are lots of
+  callbacks in structure members.
+  See the file doc/fptr.c which demonstrates the new features.
+  Also now aggregate initalizers are parsed to catch function calls
+  and values assigned to pointer-to-function members.
+  Several internal changes/cleanups to implement the above features.
+
+- Patch to work correctly when in -I,-D the argument is in the next argv[]
+  (Awesome Walrus)
+
+- Anonymous structures are named by typedef or by first declared object.
+
+- Wide character and string constants L'x' (bash2 source)
+
+New in 1.0
+==========
+
+- Bugfix.  The conditional with omitted operand caused segfault in the usage
+  report mode.
+
+- ISOC99 additions. Declarations can appear anywhere in a block (as in C++)
+  Hexadecimal floating point constants supported (problems with HUGE_VAL,
+  which is 0x1.0p2048 in glibc)
+
+- Declaration specifiers may be after storage class specifiers.
+  For example, "uint32 static X;" is now acceptable (quicktime source).
+
+- If "-nc00" is used together with "-nckey", string constants are included.
+  The option to leave out line numbers is removed.
+
+- Function prototypes are not checked anymore. There is a rare problem
+  (discovered in quake source) and since ncc is typically a source code
+  analyser, checking function prototypes is useless.
+
+New in 0.9
+==========
+
+- New output format and new viewer. Old formats REMOVED (check your options)
+
+- Reporting absolute pathnames of source files with "-ncfabs"
+
+- Many new things in /usr/include/nognu. __FUNCTION__ now defined as the
+  string literal "__FUNCTION__" because many people use the invalid syntax:
+  printf ("This is " __ FUNCTION__ "\n");
+
+- Fixed critical bug discovered with gcc 3.2. Reallocation in expression
+  parser was broken.
+
+- GNUC variable size arrays pseudo-supported (no error).
+
+- labeled-statement=  identifier:statement
+  and now "if(x)Label:foo();" is working properly (zsh source).
+
+- Misc fixes. Lots of testing (an entire CD of sources).
+
+New in 0.8
+==========
+
+- All fixes in this version were contributed/inspired by Scott McKellar.
+  Include:
+	- Removed comment parsing which was unused.
+	- Made file reporting "right" (off by one)
+	- Made line reporting "right" as well (off by one)
+	- inttree possible signedness bug fixed.
+	- Cleanups at introduce_{anon|named}_struct ()
+	- Redundant. Lookup() was called twice in a row for members.
+	- Misc corrections, optimizations and cleanups everywhere.
+
+New in 0.7
+==========
+
+- Line number information finally included and can be optionally left out
+  with "-ncl0".  Only used when reporting syntax errors for now.
+
+- Except from, -D, -I options, "-ixxx file" options should also be passed
+  to the preprocessor.
+
+- The source file was not unmapped after the lexical analysis, while it
+  should. Also as found by Scott McKellar string literals were allocated
+  twice. Now expect 50% less memory usage.
+
+- Implemented in-file user output with keys (see doc/KEYS)
+
+- Many "do it right" fixes from Scott McKellar.
+
+- Added -ncspp option to keep sourcefile.i preprocessed C files.
+  Extremely useful for debugging failures.
+
+- In the case of :
+	typedef struct { int x, y; } zoo;
+  if reporting use of members, the anonymous structure
+  is automatically named `struct zoo'.
+
+
+New in 0.6
+==========
+
+- In usage report mode, constant expressions (in array sizes and bitfield
+  sizes), were not calculated if they were not as simple as just a number.
+  So in:
+	extern int foo [32/2];
+	int foo [16];
+  It failed because of redefining foo as an array of different size.
+  This now fixed (thanks to Doom source code)
+
+- Type of the result of the last subexpression of a compound statement in
+  expression (GNUC), implemented.
+
+- More information about calling functions through pointers to functions.
+  If the pointer to function is a simple symbol variable, it is converted
+  to a pseudo-function, calling all the functions assigned to it.
+  Otherwise there is a report that a handler is called.
+
+- An __asm__ statement in global used to confuse ncc which reported (ABSENT
+  symbol). Now __asm__ statements in global are ignored (linux kernel source).
+
+- A function definition may also be a single __asm__ statement (not
+  compound). Parsed w/o error and ignored. (linux kernel)

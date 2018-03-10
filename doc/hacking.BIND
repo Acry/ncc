@@ -1,0 +1,21 @@
+Hacking Bind (9.1.2)
+--------------------
+
+As if on purpose, the program bind could not be any more obfuscated.
+Anyway, our computer can do the job for us.
+
+./configure
+Run the following script:
+
+--------------------------------------
+#!/bin/sh
+for a in $(find . -name Makefile)
+do
+	cp $a TMP
+	cat TMP | sed 's/gcc/ncc -ncgcc -ncoo/' > $a
+done
+--------------------------------------
+
+'make -i'
+
+Voila!

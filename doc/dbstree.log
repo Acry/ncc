@@ -1,0 +1,100 @@
+This is TeX, Version 3.14159 (Web2C 7.4.5) (format=latex 2004.10.4)  8 DEC 2005 20:10
+**dbstree.tex
+(./dbstree.tex
+LaTeX2e <2001/06/01>
+Babel <v3.7h> and hyphenation patterns for american, french, german, ngerman, n
+ohyphenation, loaded.
+(/usr/share/texmf/tex/latex/base/article.cls
+Document Class: article 2001/04/21 v1.4e Standard LaTeX document class
+(/usr/share/texmf/tex/latex/base/size10.clo
+File: size10.clo 2001/04/21 v1.4e Standard LaTeX file (size option)
+)
+\c@part=\count79
+\c@section=\count80
+\c@subsection=\count81
+\c@subsubsection=\count82
+\c@paragraph=\count83
+\c@subparagraph=\count84
+\c@figure=\count85
+\c@table=\count86
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\bibindent=\dimen102
+)
+No file dbstree.aux.
+\openout1 = `dbstree.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 6.
+LaTeX Font Info:    ... okay on input line 6.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 6.
+LaTeX Font Info:    ... okay on input line 6.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 6.
+LaTeX Font Info:    ... okay on input line 6.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 6.
+LaTeX Font Info:    ... okay on input line 6.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 6.
+LaTeX Font Info:    ... okay on input line 6.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 6.
+LaTeX Font Info:    ... okay on input line 6.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <12> on input line 8.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <8> on input line 8.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <6> on input line 8.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line 13.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line 13.
+
+LaTeX Warning: Reference `app:rmv' on page 1 undefined on input line 48.
+
+
+LaTeX Warning: Reference `init' on page 1 undefined on input line 61.
+
+[1
+
+
+]
+
+LaTeX Warning: Reference `code:balance' on page 2 undefined on input line 96.
+
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 106.
+
+(/usr/share/texmf/tex/latex/base/omscmr.fd
+File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
+)
+LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 106.
+
+Underfull \hbox (badness 1354) in paragraph at lines 142--147
+[]\OT1/cmr/m/n/10 This is a case which would oc-cur when ini-
+ []
+
+[2]
+Underfull \hbox (badness 7649) in paragraph at lines 175--182
+[]\OT1/cmr/m/n/10 Theoretically, bal-anced tree im-ple-men-ta-tions
+ []
+
+[3
+
+] [4
+
+] [5] [6] [7] (./dbstree.aux)
+
+LaTeX Warning: There were undefined references.
+
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
+ ) 
+Here is how much of TeX's memory you used:
+ 254 strings out of 95847
+ 2672 string characters out of 1195962
+ 50529 words of memory out of 1000001
+ 3256 multiletter control sequences out of 10000+50000
+ 8718 words of font info for 31 fonts, out of 500000 for 1000
+ 14 hyphenation exceptions out of 1000
+ 23i,8n,19p,163b,301s stack positions out of 1500i,500n,5000p,200000b,5000s
+
+Output written on dbstree.dvi (7 pages, 17736 bytes).

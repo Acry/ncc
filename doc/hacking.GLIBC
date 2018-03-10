@@ -1,0 +1,58 @@
+glibc (2.0.x)
+=============
+
+The simplest way to hack glibc is to create a file configparms
+including:
+
+	prefix = /trashcan/place
+	CC := ncc -ncgcc -ncoo -ncspp
+	default_flags :=
+
+and then ./configure
+
+PROBLEMS
+--------
+
+glibc very often uses a macro weak_alias.
+
+	weak_alias (__strdup, strdup)
+
+is expanded to:
+
+     extern __typeof__(__strdup) strdup __attribute__((weak));
+
+Now, that is strange in many aspects.
+The __attribute__ keyword disappears from the nognu macros and
+eventually ncc sees:
+
+	extern __typeof__(__strdup) strdup;
+
+__strdup is a function, and K&R sais that type "function"
+is converted to "pointer to function" in certain cases in expressions,
+and typeof gives the type of an expression.
+
+So we have a problem here.
+
+This is how I did it:
+
+	- edit libc-symbols.c
+	- add the following lines at the end:
+
+#ifdef __NCC__
+#undef weak_alias
+#define weak_alias(x,y)
+#endif
+
+	or using ncc keys to show that strdup actually calls __strdup:
+
+#ifdef __NCC__
+#undef weak_alias
+#define weak_alias(x,y) \
+	char x##y##_weakalias [] = \
+	"ncc-key
+D: "#y"()
+F: "#x"()
+";
+#endif
+
+	- the same thing probably for strong_alias and similar macros

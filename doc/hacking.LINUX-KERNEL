@@ -1,0 +1,34 @@
+Hacking linux-kernel 2.6
+************************
+
+Edit the root Makefile to use ncc
+
+	HOSTCC = ncc -ncgcc -ncfabs -ncld
+	CC = $(CROSS_COMPILE)ncc -ncfabs -ncgcc -ncld
+	AR = $(CROSS_COMPILE)nccar
+	LD = $(CROSS_COMPILE)nccld 
+
+Also edit the file `scripts/Makefile.build` and search for the
+line 'cmd_modversions =' and modify it in such a way:
+
+#########################################################################
+ 		rm -f $(@D)/.tmp_$(@F) $(@D)/.tmp_$(@F:.o=.ver);	\
+ 	else								\
+ 		mv -f $(@D)/.tmp_$(@F) $@;				\
++		mv -f $(@D)/.tmp_$(@F).nccout $@.nccout;		\
+ 	fi;
+ endif
+#########################################################################
+
+Then compile your kernel. If all goes well, the file vmlinux.nccout
+should appear.  Then do
+
+	nccnav vmlinux.nccout
+
+to hack it.  If you are building into another object directory (like
+`make O=/tmp/kernobj`), then it is much better to invoke the nccnav
+viewer from the root of the source tree.  As
+
+	nccnav /tmp/kernobj/vmlinux.nccout
+
+so that pathnames are relative -- and small.

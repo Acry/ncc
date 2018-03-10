@@ -1,0 +1,74 @@
+
+GENERAL BUG-HUNTING PROCEDURE
+-----------------------------
+
+			``every new program, reveals more bugs''
+
+For big and complex projects, it's generally a good idea to run
+the compilation in "script". see "man script".
+
+This way you can detect ncc-errors and segfaults.
+
+Supposing you see that there was a problem in file drivers/ide/ide-cd.c
+
+1. Run ncc with the -ncspp option
+2. Go to the directory with the problematic file and
+   "cp ide-cd.i TR.c"
+3. Now you can work with "ncc TR.c" w/o worring
+   about -I/-D options
+
+- In the case ncc Segfaulted you may jump "YOU DIDN'T FIND IT" below,
+  instead of working with gdb.
+
+- Do "gcc TR.c" to see if the file is indeed wrong C
+  due to nognu macro expansions. If this works then
+  it's an ncc problem.
+
+- If you can go to the line where the error occured
+  and see if this is "normal C" or some really unusual
+  syntactic trick.
+
+- Running "ncc -nccc TR.c" is a good way to see the
+  last expression compiled before the bug.
+
+SO YOU'VE FOUND IT:
+	You can either edit ncc or edit the problematic
+	source file to something that gives the same output
+	with more correct code.
+	That depends on whether you think the compiler should
+	adapt to the program or the program should comply
+	with the rest of the world.
+
+YOU DIDN'T FIND IT/YOU ARE BORED TO DO THIS:
+	Please send me the TR.c of the offending file
+	at <sxanth@ceid.upatras.gr>
+
+
+
+
+Any program that uses glibc sockets, will probably have the following
+problem with glibc header files in the GNU system:
+
+socket.h troubles in GNU libc
+-----------------------------
+
+The libc header files, are "compiler dependant".
+
+There is no way around. Either you don't define __GCC__ and
+half of the things are missing (go figure which), or you
+define __GCC__ and be prepared to come against a
+"transparent union" argument to getsockname().
+
+Do we have to rewrite a clean libc?
+
+For the good-hearted hacker, some additional work will have to
+be done. Please edit /usr/include/socket.h
+See the mess. This has nothing to do with programming, and it is
+the dreadful perfectionism some people who get excited about their system,
+get into and screw everything up. Find 'transparent union'
+and where it sais "#if  (!defined __GNUC__ || ..."
+make it "#if __NCC__ || (!defined __GNUC__ || .."
+
+		``people who code too much, tend to get authoritative''
+===========================================================================
+

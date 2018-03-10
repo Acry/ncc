@@ -1,0 +1,37 @@
+
+#define __attribute__(x)
+#define __const const
+#define __signed__ signed
+#define __volatile__ volatile
+#define __volatile volatile
+#define __extension__
+#define asm __asm__
+#define __asm __asm__
+#define __const__ const
+#define __typeof(x) __typeof__(x)
+
+// what is this? Not documented in gcc.info, and
+// used in the linux kernel source. let's make it 1.
+#define __builtin_constant_p(x) 1
+
+
+#define __alignof__ sizeof
+#define __alignof sizeof
+
+#define __attribute(x)
+
+#define __PRETTY_FUNCTION__ __func__
+
+// ISOC99
+#define _Bool int
+
+// New stuff
+#define __restrict
+#define __restrict__
+#define __builtin_va_list char*
+#define typeof(x) __typeof__(x)
+
+// What is this?
+#define __builtin_va_arg(x,y) (y)x
+#define __builtin_types_compatible_p(x, y) 1
+#define __builtin_offsetof(x,y) 1

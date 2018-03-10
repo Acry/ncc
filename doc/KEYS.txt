@@ -1,0 +1,47 @@
+
+ncc KEYS
+========
+
+Some times, it is useful to pass additional information to the ncc output.
+For example resolving handlers or providing the call flow of assembly code.
+
+This can be done with the -nckey option.
+With this option ncc will scan the string literals of the
+source file for the ones starting with
+
+	"ncc-key"
+
+and print everything the rest of this string to the output.
+
+An example, in linux kernel, every one jiffie, the do_timers() is called
+which marks the timers bottom half handler active. Then, the next time the
+scheduler will run, it will run do_bottom_half().
+do_bottom_half() will then call timer_bh() which will call update_times(),
+etc. Here is the text resolving that and adding it to the ncc output nicely
+for nccnav format.
+
+/*
+somewhere inside sched.c ....
+*/
+
+#ifdef __NCC__
+char some_unused_name [] = "ncc-key"
+"
+D: do_bottom_half()
+F: timer_bh()
+";
+#endif
+
+------
+
+keys can have names. For instance, -nckey-special-assembly-output-3D
+will search for the strings starting with:
+
+	"ncc-key-special-assembly-output-3D"
+
+
+-----
+
+This feature is a bit irrelevant with the compiler and on the other hand can
+be greatly improved. We keep it as a "hack" to join manually nodes in the
+call flow graph.

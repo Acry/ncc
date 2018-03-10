@@ -42,7 +42,7 @@ nccnav/nccnav: nccnav/nccnav.cpp
 	@cd nccnav && make
 
 objdir/ncc: objdir/dbstree.o objdir/inttree.o objdir/lex.o objdir/space.o objdir/cexpand.o objdir/cdb.o objdir/parser.o objdir/ccexpr.o objdir/preproc.o objdir/usage.o main.cpp
-	$(CXX) -c $(CXXFLAGS) main.cpp objdir/*.o -o objdir/ncc 
+	$(CXX) $(CXXFLAGS) main.cpp objdir/*.o -o objdir/ncc 
 
 objdir/cexpand.o: cexpand.cpp
 	$(CXX) -c $(CXXFLAGS) cexpand.cpp

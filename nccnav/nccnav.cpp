@@ -11,8 +11,8 @@
 #include <signal.h>
 #include <fcntl.h>
 
-#include "dbstree.h"
-#include "inttree.h"
+#include "../dbstree.h"
+#include "../inttree.h"
 
 // If you don't want an external viewer,
 // comment out the definitions of SOURCE_VIEWER

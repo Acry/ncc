@@ -1,26 +1,38 @@
-#C-Compiler
+#C-Compiler and flags
 CC 		= gcc
-
 CFLAGS 		=
 CPPFLAGS 	=
-
+#C++-Compiler and flags
 CXX 		= g++
-CXXFLAGS 	= 
-
-DESTDIR ?= /usr
-LCFLAGS = -g -O2
-BINDIR = ${DESTDIR}/bin
-MANDIR = ${DESTDIR}/share/man
-INCLUDEDIR = ${DESTDIR}/include
-NOGNU = /usr/include/nognu
-
+CXXFLAGS 	= -Wno-write-strings -Wno-literal-suffix
+#LCFLAGS = -g -O2
 #CFLAGS = $(LCFLAGS) -c
 
+#BUILD VARS
+MKDIR_P 	= mkdir -p
+BUILDDIR 	= objdir
+NCCNAVDIR	= nccnav
+#INSTALL VARS
+DESTDIR        ?= /usr
+BINDIR 		= $(DESTDIR)/bin
+MANDIR 		= $(DESTDIR)/share/man
+INCLUDEDIR	= $(DESTDIR)/include
+NOGNU		= /usr/include/nognu
 
-tout: objdir/ncc nccnav/nccnav
-	@echo Salut.
+#ncc Objects
+_NCCOBJECTS=dbstree.o inttree.o lex.o space.o cexpand.o cdb.o parser.o ccexpr.o preproc.o usage.o
+#ncc Objects with path
+NCCOBJECTS=$(patsubst %,$(BUILDDIR)/%,$(_NCCOBJECTS))
 
-install: tout
+.PHONY: directories
+all: directories ncc nccnav
+
+directories: $(BUILDDIR)
+
+$(BUILDDIR):
+	$(MKDIR_P) $(BUILDDIR)
+
+install: all
 	cp objdir/ncc $(BINDIR)/ncc
 	cp scripts/nccstrip2.py $(BINDIR)/nccstrip2.py
 	ln -sf $(BINDIR)/ncc $(BINDIR)/nccar
@@ -37,59 +49,68 @@ uninstall:
 	rm -f $(BINDIR)/ncc $(BINDIR)/nccnav $(BINDIR)/nccnavi $(MANDIR)/man1/ncc.1 $(INCLUDEDIR)/nognu
 	rm -f $(BINDIR)/nccar $(BINDIR)/nccld $(BINDIR)/nccc++ $(BINDIR)/nccg++
 
-nccnav/nccnav: nccnav/nccnav.cpp
+.PHONY: nccnav
+nccnav: $(NCCNAVDIR)/nccnav.cpp
 	@echo Compiling nccnav viewer.
-	@cd nccnav && make
+	@cd $(NCCNAVDIR) && make
 
-objdir/ncc: objdir/dbstree.o objdir/inttree.o objdir/lex.o objdir/space.o objdir/cexpand.o objdir/cdb.o objdir/parser.o objdir/ccexpr.o objdir/preproc.o objdir/usage.o main.cpp
-	$(CXX) $(CXXFLAGS) main.cpp objdir/*.o -o objdir/ncc 
+ncc: directories $(_NCCOBJECTS) main.cpp
+	$(CXX) $(CXXFLAGS) main.cpp $(NCCOBJECTS) -o $(BUILDDIR)/ncc 
 
-objdir/cexpand.o: cexpand.cpp
+# $(OBJDIR)/%.o: %.c
+# $(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
+
+cexpand.o: cexpand.cpp
 	$(CXX) -c $(CXXFLAGS) cexpand.cpp
-	@mv cexpand.o objdir/
+	@mv $@ $(BUILDDIR)
 
-objdir/parser.o: parser.cpp
+parser.o: parser.cpp
 	$(CXX) -c $(CXXFLAGS) parser.cpp
-	@mv parser.o objdir/
+	@mv $@ $(BUILDDIR)
 
-objdir/inttree.o: inttree.[cpp,h]
+inttree.o: inttree.[cpp,h]
 	$(CXX) -c $(CXXFLAGS) inttree.cpp
-	@mv inttree.o objdir/
+	@mv $@ $(BUILDDIR)
 
-objdir/dbstree.o: dbstree.[cpp,h]
+dbstree.o: dbstree.[cpp,h]
 	$(CXX) -c $(CXXFLAGS) dbstree.cpp
-	@mv dbstree.o objdir/
+	@mv $@ $(BUILDDIR)
 
-objdir/lex.o: lex.cpp
+lex.o: lex.cpp
 	$(CXX) -c $(CXXFLAGS) lex.cpp
-	@mv lex.o objdir/
+	@mv $@ $(BUILDDIR)
 
-objdir/cdb.o: cdb.cpp
+cdb.o: cdb.cpp
 	$(CXX) -c $(CXXFLAGS) cdb.cpp
-	@mv cdb.o objdir/
+	@mv $@ $(BUILDDIR)
 
-objdir/space.o: space.cpp
+space.o: space.cpp
 	$(CXX) -c $(CXXFLAGS) space.cpp
-	@mv space.o objdir/
+	@mv $@ $(BUILDDIR)
 
-objdir/usage.o: usage.cpp
+usage.o: usage.cpp
 	$(CXX) -c $(CXXFLAGS) usage.cpp
-	@mv usage.o objdir/
+	@mv $@ $(BUILDDIR)
 
-objdir/ccexpr.o: ccexpr.cpp
+ccexpr.o: ccexpr.cpp
 	$(CXX) -c $(CXXFLAGS) ccexpr.cpp
-	@mv ccexpr.o objdir/
+	@mv $@ $(BUILDDIR)
 
-objdir/preproc.o: preproc.cpp
+preproc.o: preproc.cpp
 	$(CXX) -c $(CXXFLAGS) preproc.cpp
-	@mv preproc.o objdir/
+	@mv $@ $(BUILDDIR)
 
+.PHONY: wc
 wc:
 	wc *.[cpp,h] nccnav/*.cpp | sort -n
 
+.PHONY: clean
 clean:
-	rm -f objdir/*.o
+	- rm -f $(NCCOBJECTS)
+
+.PHONY: distclean
 
 distclean:
-	rm -f objdir/* objdir/ncc
+	- rm -f $(BUILDDIR)/*
+	- rmdir $(BUILDDIR)
 	@cd nccnav && make clean

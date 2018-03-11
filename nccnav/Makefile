@@ -1,24 +1,35 @@
 #C-Compiler
 CC 		= gcc
-
 CFLAGS 		=
 CPPFLAGS 	=
-
+#C++-Compiler and flags
 CXX 		= g++
-CXXFLAGS 	= -ansi
+CXXFLAGS 	= -ansi -Wno-write-strings
+#FIXME: -ansi is ancient - rewrite to compile and silent warnings
 
-OBJDIR = ../objdir
+#BUILD VARS
+MKDIR_P 	= mkdir -p
+BUILDDIR 	= ../objdir
 
-$(OBJDIR)/nccnav: nccnav.cpp $(OBJDIR)/dbstree.o $(OBJDIR)/inttree.o
-	$(CXX) $(CXXFLAGS) nccnav.cpp -I.. -lncurses -o nccnav $(OBJDIR)/dbstree.o $(OBJDIR)/inttree.o
+.PHONY: directories
+all: directories nccnav
 
-$(OBJDIR)/dbstree.o: ../dbstree.[Ch]
+directories: $(BUILDDIR)
+
+$(BUILDDIR):
+	$(MKDIR_P) $(BUILDDIR)
+
+nccnav: nccnav.cpp $(BUILDDIR)/dbstree.o $(BUILDDIR)/inttree.o
+	$(CXX) $(CXXFLAGS) nccnav.cpp -I.. -lncurses -o nccnav $(BUILDDIR)/dbstree.o $(BUILDDIR)/inttree.o
+
+$(BUILDDIR)/dbstree.o: ../dbstree.[cpp,h]
 	$(CXX) $(CXXFLAGS) ../dbstree.cpp -c
-	@mv dbstree.o $(OBJDIR)
+	@mv dbstree.o $(BUILDDIR)
 
-$(OBJDIR)/inttree.o: ../inttree.[Ch]
+$(BUILDDIR)/inttree.o: ../inttree.[cpp,h]
 	$(CXX) $(CXXFLAGS) ../inttree.cpp -c
-	@mv inttree.o $(OBJDIR)
+	@mv inttree.o $(BUILDDIR)
 
+.PHONY: clean
 clean:
-	rm -f *.o nccnav
+	rm -f nccnav

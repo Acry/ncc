@@ -1,2 +1,4 @@
 objdir/
 nccnav/nccnav
+*.i
+*.nccout

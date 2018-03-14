@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+#  Most Linux Distros use Python 3 as default.
+#  Since Python 2 is also available in most distro repo's, 
+#  check python command if it is exuting Python 2 or 3.
+
+if python -V >/dev/null 2>&1;then
+    PYTHON_VERSION="$(python -V )"
+    PYTHON_VERSION=$(echo $PYTHON_VERSION | cut -f1 -d.)
+else
+   echo "Sorry, no Python found at all."
+   exit 1
+fi
+
+if [[ "$PYTHON_VERSION" == "Python 2"* ]]; then
+	echo "Python 3 is standard."
+    #python hm.py "$@"
+elif [[ "$PYTHON_VERSION" == "Python 3"* ]]; then
+	echo "Python 3 is standard."
+    #python2 hm.py "$@"
+else
+   echo "Sorry, couldn't find Python 2."
+fi
